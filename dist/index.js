@@ -35885,7 +35885,7 @@ async function runDocEnhancer(openaiKey, appId, privateKey, installationId, owne
                     ? `### ✅ Swagger review by GPT (commit: \`${shortSha}\`)
 
 This controller and DTO are already documented properly. No changes needed.`
-                    : `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
+                    : `### 🤖 Auto-generated Swagger documentation suggestion from ${model} (commit: \`${shortSha}\`)
 
 ${enhanced.trim()}`;
                 await octokit.issues.createComment({
