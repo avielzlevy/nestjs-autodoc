@@ -96,7 +96,7 @@ export async function runDocEnhancer(
 This controller and DTO are already documented properly. No changes needed.`
           : `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
 
-${"```ts\n" + enhanced.trim() + "\n```"}`;
+${enhanced.trim()}`;
 
         await octokit.issues.createComment({
           owner,

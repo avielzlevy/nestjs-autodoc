@@ -35754,6 +35754,7 @@ Always infer and apply relevant documentation decorators according to the follow
 - Decorate controller and method levels accordingly.
 - Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
 - Output a single code block containing the full updated DTO and Controller.
+- Return your output wrapped in a single \`\`\`typescript code block.
 
 If the controller and DTO are already documented correctly according to the rules above, do not return the code again. Instead, reply with exactly:
 
@@ -35881,7 +35882,7 @@ async function runDocEnhancer(openaiKey, appId, privateKey, installationId, owne
 This controller and DTO are already documented properly. No changes needed.`
                     : `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
 
-${"```ts\n" + enhanced.trim() + "\n```"}`;
+${enhanced.trim()}`;
                 await octokit.issues.createComment({
                     owner,
                     repo,
