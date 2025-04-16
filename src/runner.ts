@@ -18,8 +18,25 @@ export async function runDocEnhancer(
     pull_number: prNumber,
   });
 
+  const { data: comments } = await octokit.issues.listComments({
+    owner,
+    repo,
+    issue_number: prNumber,
+  });
+
   for (const commit of commits) {
     const commitSha = commit.sha;
+    const shortSha = commitSha.slice(0, 7);
+
+    const alreadyCommented = comments.some((comment) =>
+      comment.body?.includes(shortSha)
+    );
+
+    if (alreadyCommented) {
+      console.log(`⏭️ Skipping commit ${shortSha} – already commented.`);
+      continue;
+    }
+
     console.log(`🔍 Checking commit ${commitSha}`);
 
     const { data: files } = await octokit.repos.getCommit({
@@ -71,7 +88,7 @@ export async function runDocEnhancer(
           owner,
           repo,
           issue_number: prNumber,
-          body: `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${commitSha.slice(0, 7)}\`)
+          body: `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
 
 ${"```ts\n" + enhanced.trim() + "\n```"}`,
         });
