@@ -7,8 +7,8 @@ export async function sendServiceUnderstandingToGPT(serviceCode: string, openaiK
   try {
     const response = await client.responses.create({
       model: "gpt-4.1",
-      instructions: "אתה עוזר מפתח שמתעד קוד NestJS. בשלב הזה אתה רק צריך להבין את הקוד – אל תבצע כל פעולה אחרת. רק תגיד אם הבנת.",
-      input: `הנה קובץ הסרוויס:
+      instructions: "You are a developer assistant that documents NestJS code. At this stage, your job is only to understand the service logic – do not take any action. Just reply with confirmation if you understood.",
+      input: `Here is the service file:
 
 ${serviceCode}`,
     });
@@ -28,7 +28,26 @@ export async function sendEnhancementRequestToGPT(dtoCode: string, controllerCod
   try {
     const response = await client.responses.create({
       model: "gpt-4.1",
-      instructions: "קח את הקוד הבא (DTO וקונטרולר) והוסף לו דקורייטורים של Swagger, כולל @ApiProperty ו-@ApiOperation לפי ההקשר. תחזיר את הקוד כולו מתועד כמו שצריך.",
+      instructions: `You are a specialized assistant for documenting NestJS controllers using Swagger decorators.
+
+Only add decorators — never modify method logic or structure.
+Always infer and apply relevant documentation decorators according to the following rules:
+
+- Use @ApiTags on every controller to define its category.
+- Use @ApiOperation on every method with a clear summary.
+- Use @ApiResponse for all expected status codes (200, 201, 400, 401, 404, etc.).
+- Use @ApiBearerAuth on protected routes.
+- Use @ApiParam when using path parameters, with name, description, and example.
+- Use @ApiProperty / @ApiPropertyOptional in all DTO fields with description and example.
+- Use @ApiExtraModels when working with generics like PaginatedDto<T>.
+- Use @ApiSecurity or @ApiBasicAuth / @ApiCookieAuth / @ApiOAuth2 if appropriate.
+- Decorate controller and method levels accordingly.
+- Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
+- Output a single code block containing the full updated DTO and Controller.
+
+Be accurate, clear, and never change business logic.
+
+`,
       input: `DTO:
 
 ${dtoCode}
