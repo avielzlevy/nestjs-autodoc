@@ -11,6 +11,14 @@ export async function runDocEnhancer(
 ) {
   const octokit = new Octokit({ auth: githubToken });
 
+  const { data: pr } = await octokit.pulls.get({
+    owner,
+    repo,
+    pull_number: prNumber,
+  });
+
+  const headSha = pr.head.sha;
+
   const { data: files } = await octokit.pulls.listFiles({
     owner,
     repo,
@@ -26,7 +34,6 @@ export async function runDocEnhancer(
 
   console.log("Detected backend files:", backendFiles);
 
-  // חיפוש קובץ הסרוויס התואם לכל controller
   const controllers = backendFiles.filter((f) => f.endsWith(".controller.ts"));
 
   for (const controllerPath of controllers) {
@@ -37,11 +44,24 @@ export async function runDocEnhancer(
     );
 
     console.log(`🔎 Looking for matching service: ${servicePath}`);
-    const matchingFile = files.find((f) => f.filename === servicePath);
-    if (matchingFile) {
-      console.log(`✅ Found service for ${controllerPath}: ${servicePath}`);
-    } else {
-      console.log(`⚠️ No matching service found for ${controllerPath}`);
+
+    try {
+      const { data: serviceContent } = await octokit.repos.getContent({
+        owner,
+        repo,
+        path: servicePath,
+        ref: headSha,
+      });
+
+      if (Array.isArray(serviceContent) || !("content" in serviceContent)) {
+        throw new Error("Unexpected content format");
+      }
+
+      const decoded = Buffer.from(serviceContent.content, 'base64').toString('utf8');
+      console.log(`✅ Found and loaded service for ${controllerPath}`);
+      // אפשר לשלוח את decoded ל-GPT בהמשך
+    } catch (err) {
+      console.log(`⚠️ Could not load service file: ${servicePath}`);
     }
   }
 
