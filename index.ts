@@ -19,7 +19,7 @@ import { runDocEnhancer } from './src/runner';
 
     console.log(`Running doc enhancer on PR #${prNumber} in ${repo.owner}/${repo.repo}`);
 
-    await runDocEnhancer(openaiKey, token, repo.owner, repo.repo, prNumber);
+    await runDocEnhancer(openaiKey, repo.owner, repo.repo, prNumber);
   } catch (error: any) {
     console.error('Error:', error);
     core.setFailed(error.message);

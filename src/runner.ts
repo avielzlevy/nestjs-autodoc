@@ -2,15 +2,16 @@
 import { Octokit } from "@octokit/rest";
 import * as path from "path";
 import { sendEnhancementRequestToGPT } from "./gpt";
+import { getAppOctokit } from "./authenticateApp";
+
 
 export async function runDocEnhancer(
   openaiKey: string,
-  githubToken: string,
   owner: string,
   repo: string,
   prNumber: number
 ) {
-  const octokit = new Octokit({ auth: githubToken });
+    const octokit = await getAppOctokit();
 
   const { data: commits } = await octokit.pulls.listCommits({
     owner,
