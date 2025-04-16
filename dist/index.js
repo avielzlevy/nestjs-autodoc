@@ -35743,27 +35743,36 @@ async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode,
     try {
         const response = await client.responses.create({
             model,
-            instructions: `You are a specialized assistant for documenting NestJS controllers using Swagger decorators.
-
-Only add decorators — never modify method logic or structure.
-Always infer and apply relevant documentation decorators according to the following rules:
-
-- Use @ApiTags on every controller to define its category.
-- Use @ApiOperation on every method with a clear summary.
-- Use @ApiResponse for all expected status codes (200, 201, 400, 401, 404, etc.).
-- Use @ApiBearerAuth on protected routes.
-- Use @ApiParam when using path parameters, with name, description, and example.
-- Use @ApiProperty / @ApiPropertyOptional in all DTO fields with description and example.
-- Use @ApiExtraModels when working with generics like PaginatedDto<T>.
-- Use @ApiSecurity or @ApiBasicAuth / @ApiCookieAuth / @ApiOAuth2 if appropriate.
-- Decorate controller and method levels accordingly.
-- Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
-- Output a single code block containing the full updated DTO and Controller.
-- Return your output wrapped in a single \`\`\`typescript code block.
-
-If the controller and DTO are already documented correctly according to the rules above, do not return the code again. Instead, reply with exactly:
+            //       instructions: `You are a specialized assistant for documenting NestJS controllers using Swagger decorators.
+            // Only add decorators — never modify method logic or structure.
+            // Always infer and apply relevant documentation decorators according to the following rules:
+            // - Use @ApiTags on every controller to define its category.
+            // - Use @ApiOperation on every method with a clear summary.
+            // - Use @ApiResponse for all expected status codes (200, 201, 400, 401, 404, etc.).
+            // - Use @ApiBearerAuth on protected routes.
+            // - Use @ApiParam when using path parameters, with name, description, and example.
+            // - Use @ApiProperty / @ApiPropertyOptional in all DTO fields with description and example.
+            // - Use @ApiExtraModels when working with generics like PaginatedDto<T>.
+            // - Use @ApiSecurity or @ApiBasicAuth / @ApiCookieAuth / @ApiOAuth2 if appropriate.
+            // - Decorate controller and method levels accordingly.
+            // - Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
+            // - Output a single code block containing the full updated DTO and Controller.
+            // - Return your output wrapped in a single \`\`\`typescript code block.
+            // If the controller and DTO are already documented correctly according to the rules above, do not return the code again. Instead, reply with exactly:
+            // ✅ Already documented
+            // `,
+            instructions: `If the controller and DTO are already documented correctly according to the rules above, reply with:
 
 ✅ Already documented
+
+Otherwise, return:
+1. A short explanation (in English) of what documentation is missing or incomplete.
+2. Only the missing decorators or code blocks, not the full file.
+3. Wrap each TypeScript snippet in its own \`\`\`typescript block.
+4. Do not modify the existing code or logic.
+5. Do not add any additional comments or explanations.
+6. Do not include any other text or formatting.
+7. Do not repeat the original code.
 `,
             input: `Service:
 
