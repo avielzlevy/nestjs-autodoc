@@ -30025,6 +30025,12 @@ const rest_1 = __nccwpck_require__(6145);
 const path = __importStar(__nccwpck_require__(6928));
 async function runDocEnhancer(openaiKey, githubToken, owner, repo, prNumber) {
     const octokit = new rest_1.Octokit({ auth: githubToken });
+    const { data: pr } = await octokit.pulls.get({
+        owner,
+        repo,
+        pull_number: prNumber,
+    });
+    const headSha = pr.head.sha;
     const { data: files } = await octokit.pulls.listFiles({
         owner,
         repo,
@@ -30035,18 +30041,27 @@ async function runDocEnhancer(openaiKey, githubToken, owner, repo, prNumber) {
         .filter((f) => f.startsWith("backend/") &&
         (f.endsWith(".controller.ts") || f.endsWith(".dto.ts")));
     console.log("Detected backend files:", backendFiles);
-    // חיפוש קובץ הסרוויס התואם לכל controller
     const controllers = backendFiles.filter((f) => f.endsWith(".controller.ts"));
     for (const controllerPath of controllers) {
         const baseName = path.basename(controllerPath).replace(".controller.ts", "");
         const servicePath = controllerPath.replace(`${baseName}.controller.ts`, `${baseName}.service.ts`);
         console.log(`🔎 Looking for matching service: ${servicePath}`);
-        const matchingFile = files.find((f) => f.filename === servicePath);
-        if (matchingFile) {
-            console.log(`✅ Found service for ${controllerPath}: ${servicePath}`);
+        try {
+            const { data: serviceContent } = await octokit.repos.getContent({
+                owner,
+                repo,
+                path: servicePath,
+                ref: headSha,
+            });
+            if (Array.isArray(serviceContent) || !("content" in serviceContent)) {
+                throw new Error("Unexpected content format");
+            }
+            const decoded = Buffer.from(serviceContent.content, 'base64').toString('utf8');
+            console.log(`✅ Found and loaded service for ${controllerPath}`);
+            // אפשר לשלוח את decoded ל-GPT בהמשך
         }
-        else {
-            console.log(`⚠️ No matching service found for ${controllerPath}`);
+        catch (err) {
+            console.log(`⚠️ Could not load service file: ${servicePath}`);
         }
     }
     // בהמשך נוסיף שליחת הקבצים ל-GPT והחזרה עם דוקומנטציה
