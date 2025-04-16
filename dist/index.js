@@ -35730,7 +35730,9 @@ Always infer and apply relevant documentation decorators according to the follow
 - Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
 - Output a single code block containing the full updated DTO and Controller.
 
-Be accurate, clear, and never change business logic.
+If the controller and DTO are already documented correctly according to the rules above, do not return the code again. Instead, reply with exactly:
+
+✅ Already documented
 `,
             input: `Service:
 
@@ -35848,13 +35850,19 @@ async function runDocEnhancer(openaiKey, githubToken, owner, repo, prNumber) {
                 const decodedController = Buffer.from(controllerFile.data.content, 'base64').toString('utf8');
                 const enhanced = await (0, gpt_1.sendEnhancementRequestToGPT)(decodedService, decodedDTO, decodedController, openaiKey);
                 console.log("🎯 Enhanced Documentation:\n", enhanced);
+                const isAlreadyGood = /✅\s*already documented/i.test(enhanced);
+                const body = isAlreadyGood
+                    ? `### ✅ Swagger review by GPT (commit: \`${shortSha}\`)
+
+This controller and DTO are already documented properly. No changes needed.`
+                    : `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
+
+${"```ts\n" + enhanced.trim() + "\n```"}`;
                 await octokit.issues.createComment({
                     owner,
                     repo,
                     issue_number: prNumber,
-                    body: `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
-
-${"```ts\n" + enhanced.trim() + "\n```"}`,
+                    body,
                 });
             }
             catch (err) {

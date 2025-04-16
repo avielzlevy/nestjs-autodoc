@@ -84,13 +84,21 @@ export async function runDocEnhancer(
 
         console.log("🎯 Enhanced Documentation:\n", enhanced);
 
+        const isAlreadyGood = /✅\s*already documented/i.test(enhanced);
+
+        const body = isAlreadyGood
+          ? `### ✅ Swagger review by GPT (commit: \`${shortSha}\`)
+
+This controller and DTO are already documented properly. No changes needed.`
+          : `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
+
+${"```ts\n" + enhanced.trim() + "\n```"}`;
+
         await octokit.issues.createComment({
           owner,
           repo,
           issue_number: prNumber,
-          body: `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${shortSha}\`)
-
-${"```ts\n" + enhanced.trim() + "\n```"}`,
+          body,
         });
 
       } catch (err) {

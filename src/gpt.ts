@@ -24,7 +24,9 @@ Always infer and apply relevant documentation decorators according to the follow
 - Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
 - Output a single code block containing the full updated DTO and Controller.
 
-Be accurate, clear, and never change business logic.
+If the controller and DTO are already documented correctly according to the rules above, do not return the code again. Instead, reply with exactly:
+
+✅ Already documented
 `,
       input: `Service:
 
