@@ -6,12 +6,15 @@ import { getAppOctokit } from "./authenticateApp";
 
 
 export async function runDocEnhancer(
-  openaiKey: string,
-  owner: string,
-  repo: string,
-  prNumber: number
+    openaiKey: string,
+    appId: number,
+    privateKey: string,
+    installationId: number,
+    owner: string,
+    repo: string,
+    prNumber: number
 ) {
-    const octokit = await getAppOctokit();
+    const octokit = getAppOctokit(appId, privateKey, installationId);
 
   const { data: commits } = await octokit.pulls.listCommits({
     owner,

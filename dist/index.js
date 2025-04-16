@@ -35675,20 +35675,22 @@ const github = __importStar(__nccwpck_require__(3228));
 const runner_1 = __nccwpck_require__(4813);
 (async () => {
     try {
-        const openaiKey = core.getInput('openai_key', { required: true });
-        const token = core.getInput('github_token', { required: true });
+        const openaiKey = core.getInput("openai_key", { required: true });
+        const appId = Number(core.getInput("gh_app_id", { required: true }));
+        const privateKey = core.getInput("gh_app_private_key", { required: true });
+        const installationId = Number(core.getInput("gh_app_installation_id", { required: true }));
         const context = github.context;
         if (!context.payload.pull_request) {
-            core.setFailed('No pull request context found.');
+            core.setFailed("No pull request context found.");
             return;
         }
         const prNumber = context.payload.pull_request.number;
         const repo = context.repo;
         console.log(`Running doc enhancer on PR #${prNumber} in ${repo.owner}/${repo.repo}`);
-        await (0, runner_1.runDocEnhancer)(openaiKey, repo.owner, repo.repo, prNumber);
+        await (0, runner_1.runDocEnhancer)(openaiKey, appId, privateKey, installationId, repo.owner, repo.repo, prNumber);
     }
     catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         core.setFailed(error.message);
     }
 })();
@@ -35703,13 +35705,9 @@ const runner_1 = __nccwpck_require__(4813);
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getAppOctokit = getAppOctokit;
-// src/authenticateApp.ts
 const rest_1 = __nccwpck_require__(6145);
 const auth_app_1 = __nccwpck_require__(5434);
-function getAppOctokit() {
-    const appId = Number(process.env.GH_APP_ID);
-    const privateKey = process.env.GH_APP_PRIVATE_KEY;
-    const installationId = Number(process.env.GH_APP_INSTALLATION_ID);
+function getAppOctokit(appId, privateKey, installationId) {
     return new rest_1.Octokit({
         authStrategy: auth_app_1.createAppAuth,
         auth: {
@@ -35828,8 +35826,8 @@ exports.runDocEnhancer = runDocEnhancer;
 const path = __importStar(__nccwpck_require__(6928));
 const gpt_1 = __nccwpck_require__(4770);
 const authenticateApp_1 = __nccwpck_require__(883);
-async function runDocEnhancer(openaiKey, owner, repo, prNumber) {
-    const octokit = await (0, authenticateApp_1.getAppOctokit)();
+async function runDocEnhancer(openaiKey, appId, privateKey, installationId, owner, repo, prNumber) {
+    const octokit = (0, authenticateApp_1.getAppOctokit)(appId, privateKey, installationId);
     const { data: commits } = await octokit.pulls.listCommits({
         owner,
         repo,
