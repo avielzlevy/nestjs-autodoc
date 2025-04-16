@@ -35705,29 +35705,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.sendServiceUnderstandingToGPT = sendServiceUnderstandingToGPT;
 exports.sendEnhancementRequestToGPT = sendEnhancementRequestToGPT;
 // src/gpt.ts
 const openai_1 = __importDefault(__nccwpck_require__(2583));
-async function sendServiceUnderstandingToGPT(serviceCode, openaiKey) {
-    const client = new openai_1.default({ apiKey: openaiKey });
-    try {
-        const response = await client.responses.create({
-            model: "gpt-4.1",
-            instructions: "You are a developer assistant that documents NestJS code. At this stage, your job is only to understand the service logic – do not take any action. Just reply with confirmation if you understood.",
-            input: `Here is the service file:
-
-${serviceCode}`,
-        });
-        console.log("🤖 GPT raw output:", response.output_text);
-        return /הבנתי|understood|ready/i.test(response.output_text);
-    }
-    catch (err) {
-        console.error("❌ Error while calling GPT:", err);
-        return false;
-    }
-}
-async function sendEnhancementRequestToGPT(dtoCode, controllerCode, openaiKey) {
+async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode, openaiKey) {
     const client = new openai_1.default({ apiKey: openaiKey });
     try {
         const response = await client.responses.create({
@@ -35750,9 +35731,12 @@ Always infer and apply relevant documentation decorators according to the follow
 - Output a single code block containing the full updated DTO and Controller.
 
 Be accurate, clear, and never change business logic.
-
 `,
-            input: `DTO:
+            input: `Service:
+
+${serviceCode}
+
+DTO:
 
 ${dtoCode}
 
@@ -35818,65 +35802,53 @@ const path = __importStar(__nccwpck_require__(6928));
 const gpt_1 = __nccwpck_require__(4770);
 async function runDocEnhancer(openaiKey, githubToken, owner, repo, prNumber) {
     const octokit = new rest_1.Octokit({ auth: githubToken });
-    const { data: pr } = await octokit.pulls.get({
+    const { data: commits } = await octokit.pulls.listCommits({
         owner,
         repo,
         pull_number: prNumber,
     });
-    const headSha = pr.head.sha;
-    const { data: files } = await octokit.pulls.listFiles({
-        owner,
-        repo,
-        pull_number: prNumber,
-    });
-    const backendFiles = files
-        .map((f) => f.filename)
-        .filter((f) => f.startsWith("backend/") &&
-        (f.endsWith(".controller.ts") || f.endsWith(".dto.ts")));
-    console.log("Detected backend files:", backendFiles);
-    const controllers = backendFiles.filter((f) => f.endsWith(".controller.ts"));
-    for (const controllerPath of controllers) {
-        const baseName = path.basename(controllerPath).replace(".controller.ts", "");
-        const servicePath = controllerPath.replace(`${baseName}.controller.ts`, `${baseName}.service.ts`);
-        const dtoPath = controllerPath.replace(`${baseName}.controller.ts`, `${baseName}.dto.ts`);
-        console.log(`🔎 Looking for matching service: ${servicePath}`);
-        try {
-            const { data: serviceContent } = await octokit.repos.getContent({
-                owner,
-                repo,
-                path: servicePath,
-                ref: headSha,
-            });
-            if (Array.isArray(serviceContent) || !("content" in serviceContent)) {
-                throw new Error("Unexpected content format");
-            }
-            const decodedService = Buffer.from(serviceContent.content, 'base64').toString('utf8');
-            console.log(`✅ Found and loaded service for ${controllerPath}`);
-            const understood = await (0, gpt_1.sendServiceUnderstandingToGPT)(decodedService, openaiKey);
-            if (!understood) {
-                console.warn("⚠️ GPT did not confirm understanding of the service file. Aborting flow.");
-                continue;
-            }
-            console.log("✅ GPT understood the service logic. Fetching DTO and Controller...");
-            const [dtoFile, controllerFile] = await Promise.all([
-                octokit.repos.getContent({ owner, repo, path: dtoPath, ref: headSha }),
-                octokit.repos.getContent({ owner, repo, path: controllerPath, ref: headSha })
-            ]);
-            const decodedDTO = Buffer.from(dtoFile.data.content, 'base64').toString('utf8');
-            const decodedController = Buffer.from(controllerFile.data.content, 'base64').toString('utf8');
-            const enhanced = await (0, gpt_1.sendEnhancementRequestToGPT)(decodedDTO, decodedController, openaiKey);
-            console.log("🎯 Enhanced Documentation:\n", enhanced);
-            await octokit.issues.createComment({
-                owner,
-                repo,
-                issue_number: prNumber,
-                body: `### 🤖 הצעה לתיעוד אוטומטי מ-GPT
+    for (const commit of commits) {
+        const commitSha = commit.sha;
+        console.log(`🔍 Checking commit ${commitSha}`);
+        const { data: files } = await octokit.repos.getCommit({
+            owner,
+            repo,
+            ref: commitSha,
+        });
+        const backendFiles = files.files
+            ?.map((f) => f.filename)
+            .filter((f) => f.startsWith("backend/") &&
+            (f.endsWith(".controller.ts") || f.endsWith(".dto.ts"))) || [];
+        console.log("Detected backend files:", backendFiles);
+        const controllers = backendFiles.filter((f) => f.endsWith(".controller.ts"));
+        for (const controllerPath of controllers) {
+            const baseName = path.basename(controllerPath).replace(".controller.ts", "");
+            const servicePath = controllerPath.replace(`${baseName}.controller.ts`, `${baseName}.service.ts`);
+            const dtoPath = controllerPath.replace(`${baseName}.controller.ts`, `${baseName}.dto.ts`);
+            console.log(`🔎 Looking for matching service: ${servicePath}`);
+            try {
+                const [serviceFile, dtoFile, controllerFile] = await Promise.all([
+                    octokit.repos.getContent({ owner, repo, path: servicePath, ref: commitSha }),
+                    octokit.repos.getContent({ owner, repo, path: dtoPath, ref: commitSha }),
+                    octokit.repos.getContent({ owner, repo, path: controllerPath, ref: commitSha })
+                ]);
+                const decodedService = Buffer.from(serviceFile.data.content, 'base64').toString('utf8');
+                const decodedDTO = Buffer.from(dtoFile.data.content, 'base64').toString('utf8');
+                const decodedController = Buffer.from(controllerFile.data.content, 'base64').toString('utf8');
+                const enhanced = await (0, gpt_1.sendEnhancementRequestToGPT)(decodedService, decodedDTO, decodedController, openaiKey);
+                console.log("🎯 Enhanced Documentation:\n", enhanced);
+                await octokit.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: prNumber,
+                    body: `### 🤖 Auto-generated Swagger documentation suggestion from GPT (commit: \`${commitSha.slice(0, 7)}\`)
 
 ${"```ts\n" + enhanced.trim() + "\n```"}`,
-            });
-        }
-        catch (err) {
-            console.log(`⚠️ Could not process files for: ${controllerPath}`);
+                });
+            }
+            catch (err) {
+                console.log(`⚠️ Could not process files for: ${controllerPath}`);
+            }
         }
     }
 }

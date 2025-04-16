@@ -1,28 +1,7 @@
 // src/gpt.ts
 import OpenAI from "openai";
 
-export async function sendServiceUnderstandingToGPT(serviceCode: string, openaiKey: string): Promise<boolean> {
-  const client = new OpenAI({ apiKey: openaiKey });
-
-  try {
-    const response = await client.responses.create({
-      model: "gpt-4.1",
-      instructions: "You are a developer assistant that documents NestJS code. At this stage, your job is only to understand the service logic – do not take any action. Just reply with confirmation if you understood.",
-      input: `Here is the service file:
-
-${serviceCode}`,
-    });
-
-    console.log("🤖 GPT raw output:", response.output_text);
-
-    return /הבנתי|understood|ready/i.test(response.output_text);
-  } catch (err) {
-    console.error("❌ Error while calling GPT:", err);
-    return false;
-  }
-}
-
-export async function sendEnhancementRequestToGPT(dtoCode: string, controllerCode: string, openaiKey: string): Promise<string> {
+export async function sendEnhancementRequestToGPT(serviceCode: string, dtoCode: string, controllerCode: string, openaiKey: string): Promise<string> {
   const client = new OpenAI({ apiKey: openaiKey });
 
   try {
@@ -46,9 +25,12 @@ Always infer and apply relevant documentation decorators according to the follow
 - Output a single code block containing the full updated DTO and Controller.
 
 Be accurate, clear, and never change business logic.
-
 `,
-      input: `DTO:
+      input: `Service:
+
+${serviceCode}
+
+DTO:
 
 ${dtoCode}
 
