@@ -46,6 +46,18 @@ Otherwise, return following these rules and guidelines:
 1. A short explanation (in English) of what documentation is missing or incomplete.
 2. Write down only the missing decorators, not the code.
 3. Since you have access to the service code use it to show your evidence you base your point in TypeScript snippet in its own \`\`\`typescript block.
+Example:
+Missing Decorators:
+@ApiTags('Users')
+Source:'''typescript
+@Controller('users')
+'''
+@ApiOperation({ summary: 'Get user by ID' })
+Source: '''@Get(':id')
+@ApiParam({ name: 'id', description: 'User ID', example: '123' })
+@ApiResponse({ status: 200, description: 'User found' })
+'''
+@ApiResponse({ status: 200, description: 'User found' }
 `,
       input: `Service:
 
