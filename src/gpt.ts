@@ -23,7 +23,7 @@ Always infer and apply relevant documentation decorators according to the follow
 - Decorate controller and method levels accordingly.
 - Use NestJS OpenAPI decorators only. Return valid TypeScript + NestJS code.
 - Output a single code block containing the full updated DTO and Controller.
-- Return your output wrapped in a single \`\`\`typescript code block.
+- Return each file in a single \`\`\`typescript code block.
 
 If the controller and DTO are already documented correctly according to the rules above, do not return the code again. Instead, reply with exactly:
 
