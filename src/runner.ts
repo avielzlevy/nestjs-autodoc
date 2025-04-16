@@ -12,7 +12,8 @@ export async function runDocEnhancer(
     installationId: number,
     owner: string,
     repo: string,
-    prNumber: number
+    prNumber: number,
+    model: string = "gpt-4.1"
 ) {
     const octokit = getAppOctokit(appId, privateKey, installationId);
 
@@ -84,7 +85,7 @@ export async function runDocEnhancer(
         const decodedDTO = Buffer.from((dtoFile.data as any).content, 'base64').toString('utf8');
         const decodedController = Buffer.from((controllerFile.data as any).content, 'base64').toString('utf8');
 
-        const enhanced = await sendEnhancementRequestToGPT(decodedService, decodedDTO, decodedController, openaiKey);
+        const enhanced = await sendEnhancementRequestToGPT(decodedService, decodedDTO, decodedController, openaiKey, model);
 
         console.log("🎯 Enhanced Documentation:\n", enhanced);
 

@@ -8,6 +8,13 @@ import { runDocEnhancer } from "./src/runner";
     const openaiKey = core.getInput("openai_key", { required: true });
     const appId = Number(core.getInput("gh_app_id", { required: true }));
     const privateKey = core.getInput("gh_app_private_key", { required: true });
+    const model = core.getInput("model") || "gpt-4.1";
+    const allowedModels = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o"];
+    if (!allowedModels.includes(model)) {
+      throw new Error(
+        `Invalid model: ${model}. Must be one of: ${allowedModels.join(", ")}`
+      );
+    }
     const installationId = Number(
       core.getInput("gh_app_installation_id", { required: true })
     );
@@ -26,7 +33,16 @@ import { runDocEnhancer } from "./src/runner";
       `Running doc enhancer on PR #${prNumber} in ${repo.owner}/${repo.repo}`
     );
 
-    await runDocEnhancer(openaiKey, appId, privateKey, installationId, repo.owner, repo.repo, prNumber);
+    await runDocEnhancer(
+      openaiKey,
+      appId,
+      privateKey,
+      installationId,
+      repo.owner,
+      repo.repo,
+      prNumber,
+      model
+    );
   } catch (error: any) {
     console.error("Error:", error);
     core.setFailed(error.message);

@@ -35678,6 +35678,11 @@ const runner_1 = __nccwpck_require__(4813);
         const openaiKey = core.getInput("openai_key", { required: true });
         const appId = Number(core.getInput("gh_app_id", { required: true }));
         const privateKey = core.getInput("gh_app_private_key", { required: true });
+        const model = core.getInput("model") || "gpt-4.1";
+        const allowedModels = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o"];
+        if (!allowedModels.includes(model)) {
+            throw new Error(`Invalid model: ${model}. Must be one of: ${allowedModels.join(", ")}`);
+        }
         const installationId = Number(core.getInput("gh_app_installation_id", { required: true }));
         const context = github.context;
         if (!context.payload.pull_request) {
@@ -35687,7 +35692,7 @@ const runner_1 = __nccwpck_require__(4813);
         const prNumber = context.payload.pull_request.number;
         const repo = context.repo;
         console.log(`Running doc enhancer on PR #${prNumber} in ${repo.owner}/${repo.repo}`);
-        await (0, runner_1.runDocEnhancer)(openaiKey, appId, privateKey, installationId, repo.owner, repo.repo, prNumber);
+        await (0, runner_1.runDocEnhancer)(openaiKey, appId, privateKey, installationId, repo.owner, repo.repo, prNumber, model);
     }
     catch (error) {
         console.error("Error:", error);
@@ -35733,11 +35738,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sendEnhancementRequestToGPT = sendEnhancementRequestToGPT;
 // src/gpt.ts
 const openai_1 = __importDefault(__nccwpck_require__(2583));
-async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode, openaiKey) {
+async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode, openaiKey, model = 'gpt-4.1') {
     const client = new openai_1.default({ apiKey: openaiKey });
     try {
         const response = await client.responses.create({
-            model: "gpt-4.1",
+            model,
             instructions: `You are a specialized assistant for documenting NestJS controllers using Swagger decorators.
 
 Only add decorators — never modify method logic or structure.
@@ -35827,7 +35832,7 @@ exports.runDocEnhancer = runDocEnhancer;
 const path = __importStar(__nccwpck_require__(6928));
 const gpt_1 = __nccwpck_require__(4770);
 const authenticateApp_1 = __nccwpck_require__(883);
-async function runDocEnhancer(openaiKey, appId, privateKey, installationId, owner, repo, prNumber) {
+async function runDocEnhancer(openaiKey, appId, privateKey, installationId, owner, repo, prNumber, model = "gpt-4.1") {
     const octokit = (0, authenticateApp_1.getAppOctokit)(appId, privateKey, installationId);
     const { data: commits } = await octokit.pulls.listCommits({
         owner,
@@ -35873,7 +35878,7 @@ async function runDocEnhancer(openaiKey, appId, privateKey, installationId, owne
                 const decodedService = Buffer.from(serviceFile.data.content, 'base64').toString('utf8');
                 const decodedDTO = Buffer.from(dtoFile.data.content, 'base64').toString('utf8');
                 const decodedController = Buffer.from(controllerFile.data.content, 'base64').toString('utf8');
-                const enhanced = await (0, gpt_1.sendEnhancementRequestToGPT)(decodedService, decodedDTO, decodedController, openaiKey);
+                const enhanced = await (0, gpt_1.sendEnhancementRequestToGPT)(decodedService, decodedDTO, decodedController, openaiKey, model);
                 console.log("🎯 Enhanced Documentation:\n", enhanced);
                 const isAlreadyGood = /✅\s*already documented/i.test(enhanced);
                 const body = isAlreadyGood

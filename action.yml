@@ -13,6 +13,10 @@ inputs:
   gh_app_installation_id:
     description: 'GitHub App Installation ID'
     required: true
+  model:
+    description: 'OpenAI Model to use'  
+    required: false
+    default: gpt-4.1
 
 
 runs:

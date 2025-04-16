@@ -1,12 +1,12 @@
 // src/gpt.ts
 import OpenAI from "openai";
 
-export async function sendEnhancementRequestToGPT(serviceCode: string, dtoCode: string, controllerCode: string, openaiKey: string): Promise<string> {
+export async function sendEnhancementRequestToGPT(serviceCode: string, dtoCode: string, controllerCode: string, openaiKey: string,model:string = 'gpt-4.1'): Promise<string> {
   const client = new OpenAI({ apiKey: openaiKey });
 
   try {
     const response = await client.responses.create({
-      model: "gpt-4.1",
+      model,
       instructions: `You are a specialized assistant for documenting NestJS controllers using Swagger decorators.
 
 Only add decorators — never modify method logic or structure.
