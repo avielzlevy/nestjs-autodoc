@@ -1,0 +1,12 @@
+name: 'NestJS Swagger AutoDoc'
+description: 'Enhances NestJS Controllers/DTOs with Swagger decorators using GPT'
+inputs:
+  openai_key:
+    required: true
+    description: 'OpenAI API Key'
+  github_token:
+    required: true
+    description: 'GitHub Token'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
