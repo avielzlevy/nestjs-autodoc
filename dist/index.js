@@ -35847,6 +35847,14 @@ async function runDocEnhancer(openaiKey, githubToken, owner, repo, prNumber) {
             const decodedController = Buffer.from(controllerFile.data.content, 'base64').toString('utf8');
             const enhanced = await (0, gpt_1.sendEnhancementRequestToGPT)(decodedDTO, decodedController, openaiKey);
             console.log("🎯 Enhanced Documentation:\n", enhanced);
+            await octokit.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `### 🤖 הצעה לתיעוד אוטומטי מ-GPT
+
+${"```ts\n" + enhanced.trim() + "\n```"}`,
+            });
         }
         catch (err) {
             console.log(`⚠️ Could not process files for: ${controllerPath}`);

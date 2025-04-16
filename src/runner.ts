@@ -85,6 +85,15 @@ export async function runDocEnhancer(
 
       console.log("🎯 Enhanced Documentation:\n", enhanced);
 
+      await octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: prNumber,
+        body: `### 🤖 הצעה לתיעוד אוטומטי מ-GPT
+
+${"```ts\n" + enhanced.trim() + "\n```"}`,
+      });
+
     } catch (err) {
       console.log(`⚠️ Could not process files for: ${controllerPath}`);
     }
