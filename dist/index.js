@@ -35709,8 +35709,8 @@ exports.sendServiceUnderstandingToGPT = sendServiceUnderstandingToGPT;
 exports.sendEnhancementRequestToGPT = sendEnhancementRequestToGPT;
 // src/gpt.ts
 const openai_1 = __importDefault(__nccwpck_require__(2583));
-const client = new openai_1.default();
 async function sendServiceUnderstandingToGPT(serviceCode, openaiKey) {
+    const client = new openai_1.default({ apiKey: openaiKey });
     try {
         const response = await client.responses.create({
             model: "gpt-4.1",
@@ -35728,6 +35728,7 @@ ${serviceCode}`,
     }
 }
 async function sendEnhancementRequestToGPT(dtoCode, controllerCode, openaiKey) {
+    const client = new openai_1.default({ apiKey: openaiKey });
     try {
         const response = await client.responses.create({
             model: "gpt-4.1",

@@ -1,9 +1,9 @@
 // src/gpt.ts
 import OpenAI from "openai";
 
-const client = new OpenAI();
-
 export async function sendServiceUnderstandingToGPT(serviceCode: string, openaiKey: string): Promise<boolean> {
+  const client = new OpenAI({ apiKey: openaiKey });
+
   try {
     const response = await client.responses.create({
       model: "gpt-4.1",
@@ -23,6 +23,8 @@ ${serviceCode}`,
 }
 
 export async function sendEnhancementRequestToGPT(dtoCode: string, controllerCode: string, openaiKey: string): Promise<string> {
+  const client = new OpenAI({ apiKey: openaiKey });
+
   try {
     const response = await client.responses.create({
       model: "gpt-4.1",
