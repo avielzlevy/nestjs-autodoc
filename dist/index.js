@@ -35765,14 +35765,19 @@ async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode,
 
 ✅ Already documented
 
-Otherwise, return:
+Otherwise, return following these rules and guidelines:
+- Use @ApiTags on every controller to define its category.
+- Use @ApiOperation on every method with a clear summary.
+- Use @ApiResponse for all expected status codes (200, 201, 400, 401, 404, etc.).
+- Use @ApiBearerAuth on protected routes.
+- Use @ApiParam when using path parameters, with name, description, and example.
+- Use @ApiProperty / @ApiPropertyOptional in all DTO fields with description and example.
+- Use @ApiExtraModels when working with generics like PaginatedDto<T>.
+- Use @ApiSecurity or @ApiBasicAuth / @ApiCookieAuth / @ApiOAuth2 if appropriate.
+
 1. A short explanation (in English) of what documentation is missing or incomplete.
-2. Only the missing decorators or code blocks, not the full file.
-3. Wrap each TypeScript snippet in its own \`\`\`typescript block.
-4. Do not modify the existing code or logic.
-5. Do not add any additional comments or explanations.
-6. Do not include any other text or formatting.
-7. Do not repeat the original code.
+2. Only the missing decorators, not the full file.
+3. Show the source of your input in TypeScript snippet in its own \`\`\`typescript block.
 `,
             input: `Service:
 
