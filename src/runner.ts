@@ -49,7 +49,7 @@ export async function runDocEnhancer(
       ?.map((f) => f.filename)
       .filter((f) =>
         f.startsWith("backend/") &&
-        (f.endsWith(".controller.ts") || f.endsWith(".dto.ts"))
+        (f.endsWith(".controller.ts") || f.endsWith(".dto.ts") || f.endsWith(".service.ts"))
       ) || [];
 
     console.log("Detected backend files:", backendFiles);

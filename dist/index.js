@@ -35829,7 +35829,7 @@ async function runDocEnhancer(openaiKey, githubToken, owner, repo, prNumber) {
         const backendFiles = files.files
             ?.map((f) => f.filename)
             .filter((f) => f.startsWith("backend/") &&
-            (f.endsWith(".controller.ts") || f.endsWith(".dto.ts"))) || [];
+            (f.endsWith(".controller.ts") || f.endsWith(".dto.ts") || f.endsWith(".service.ts"))) || [];
         console.log("Detected backend files:", backendFiles);
         const controllers = backendFiles.filter((f) => f.endsWith(".controller.ts"));
         for (const controllerPath of controllers) {
