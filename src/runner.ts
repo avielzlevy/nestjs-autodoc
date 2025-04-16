@@ -1,6 +1,7 @@
 // src/runner.ts
 import { Octokit } from "@octokit/rest";
 import * as path from "path";
+import { sendServiceUnderstandingToGPT, sendEnhancementRequestToGPT } from "./gpt";
 
 export async function runDocEnhancer(
   openaiKey: string,
@@ -42,6 +43,10 @@ export async function runDocEnhancer(
       `${baseName}.controller.ts`,
       `${baseName}.service.ts`
     );
+    const dtoPath = controllerPath.replace(
+      `${baseName}.controller.ts`,
+      `${baseName}.dto.ts`
+    );
 
     console.log(`🔎 Looking for matching service: ${servicePath}`);
 
@@ -57,13 +62,31 @@ export async function runDocEnhancer(
         throw new Error("Unexpected content format");
       }
 
-      const decoded = Buffer.from(serviceContent.content, 'base64').toString('utf8');
+      const decodedService = Buffer.from(serviceContent.content, 'base64').toString('utf8');
       console.log(`✅ Found and loaded service for ${controllerPath}`);
-      // אפשר לשלוח את decoded ל-GPT בהמשך
+
+      const understood = await sendServiceUnderstandingToGPT(decodedService, openaiKey);
+      if (!understood) {
+        console.warn("⚠️ GPT did not confirm understanding of the service file. Aborting flow.");
+        continue;
+      }
+
+      console.log("✅ GPT understood the service logic. Fetching DTO and Controller...");
+
+      const [dtoFile, controllerFile] = await Promise.all([
+        octokit.repos.getContent({ owner, repo, path: dtoPath, ref: headSha }),
+        octokit.repos.getContent({ owner, repo, path: controllerPath, ref: headSha })
+      ]);
+
+      const decodedDTO = Buffer.from((dtoFile.data as any).content, 'base64').toString('utf8');
+      const decodedController = Buffer.from((controllerFile.data as any).content, 'base64').toString('utf8');
+
+      const enhanced = await sendEnhancementRequestToGPT(decodedDTO, decodedController, openaiKey);
+
+      console.log("🎯 Enhanced Documentation:\n", enhanced);
+
     } catch (err) {
-      console.log(`⚠️ Could not load service file: ${servicePath}`);
+      console.log(`⚠️ Could not process files for: ${controllerPath}`);
     }
   }
-
-  // בהמשך נוסיף שליחת הקבצים ל-GPT והחזרה עם דוקומנטציה
 }

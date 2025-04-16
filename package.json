@@ -12,7 +12,8 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.0",
-    "@octokit/rest": "^21.1.1"
+    "@octokit/rest": "^21.1.1",
+    "openai": "^4.94.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
