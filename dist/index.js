@@ -35776,8 +35776,8 @@ Otherwise, return following these rules and guidelines:
 - Use @ApiSecurity or @ApiBasicAuth / @ApiCookieAuth / @ApiOAuth2 if appropriate.
 
 1. A short explanation (in English) of what documentation is missing or incomplete.
-2. Only the missing decorators, not the full file.
-3. Show the source of your input in TypeScript snippet in its own \`\`\`typescript block.
+2. Write down only the missing decorators, not the code.
+3. Since you have access to the service code use it to show your evidence you base your point in TypeScript snippet in its own \`\`\`typescript block.
 `,
             input: `Service:
 
