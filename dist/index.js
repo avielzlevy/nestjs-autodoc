@@ -35792,18 +35792,18 @@ Context Clarification:
 If a file is missing decorators, return this structured format:
 
 [File]
-Dto {className} is missing the following:
-1. Missing @ApiProperty on field 'firstName' (description + example).
-2. Missing @ApiPropertyOptional on field 'middleName' (description + example).
-3. Missing @ApiExtraModels due to usage of generics.
+Dto {className} is missing some swagger decorators:
+1. Add @ApiProperty on field 'firstName' (description + example).
+2. Add @ApiPropertyOptional on field 'middleName' (description + example).
+3. Add @ApiExtraModels due to usage of generics.
 
-Controller {controllerName} is missing the following:
-1. Missing @ApiTags at the class level.
-2. Method 'getUser' is missing @ApiOperation.
-3. Method 'updateUser' is missing @ApiResponse for 404.
+Controller {controllerName} is missing some swagger decorators:
+1. Add @ApiTags at the class level.
+2. Add 'getUser' is missing @ApiOperation.
+3. Add @ApiResponse for 404 for Method 'updateUser'
 
 Endpoint getUser - GET /users/:id is missing the following:
-1. Missing @ApiParam for parameter 'id' with description and example.
+1. Add @ApiParam for parameter 'id' with description and example.
 
 If everything is already correctly documented:
 
