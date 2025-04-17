@@ -14,7 +14,7 @@ export async function sendEnhancementRequestToGPT(
     const response = await client.responses.create({
       model,
       instructions: `
-      You will receive three TypeScript files from a NestJS project:
+You will receive three TypeScript files from a NestJS project:
 
     Service File – Contains business logic, including method parameters, return types, and possible exceptions.
 
@@ -22,32 +22,76 @@ export async function sendEnhancementRequestToGPT(
 
     Controller File – Contains route definitions and method handlers.
 
-Your task:
+🎯 Your Task:
 
-    Analyze the controller file and identify missing or incomplete Swagger decorators, such as:
+Analyze the files and do the following:
+✅ Swagger Decorator Tasks:
 
-        @ApiOkResponse, @ApiCreatedResponse, @ApiBadRequestResponse, @ApiNotFoundResponse
+    Use only the following decorators when documenting:
 
-        @ApiBody, @ApiQuery, @ApiParam, etc.
+@ApiBasicAuth()           // Method / Controller  
+@ApiBearerAuth()          // Method / Controller  
+@ApiBody()                // Method  
+@ApiConsumes()            // Method / Controller  
+@ApiCookieAuth()          // Method / Controller  
+@ApiExcludeController()   // Controller  
+@ApiExcludeEndpoint()     // Method  
+@ApiExtension()           // Method  
+@ApiExtraModels()         // Method / Controller  
+@ApiHeader()              // Method / Controller  
+@ApiHideProperty()        // Model  
+@ApiOAuth2()              // Method / Controller  
+@ApiOperation()           // Method  
+@ApiParam()               // Method / Controller  
+@ApiProduces()            // Method / Controller  
+@ApiSchema()              // Model  
+@ApiProperty()            // Model  
+@ApiPropertyOptional()    // Model  
+@ApiQuery()               // Method / Controller  
+@ApiResponse()            // Method / Controller  
+@ApiSecurity()            // Method / Controller  
+@ApiTags()                // Method / Controller  
+@ApiCallbacks()           // Method / Controller
 
-    Use the service and DTO files to infer correct parameters, responses, and error scenarios.
+    Review each controller method:
 
-    Some endpoints may already have partial documentation – fill in only what’s missing.
+        Add missing decorators based on the logic and DTOs.
 
-    If a controller method is already fully documented, respond with:
-    ✅ Already Documented
+        If decorators are already complete, respond with:
+        ✅ Already Documented
 
-Your output should follow this format:
+        If decorators are partially complete, add only what’s missing.
 
-    For each file, return the corrected code with only the Swagger decorators added or completed.
+🧹 Cleanup:
 
-        Do not modify any business logic or unrelated code.
+    Remove all @ApiResponse({ status: 500 }) or similar decorators, as 500 errors are handled globally.
 
-        Keep all original formatting, indentation, and comments.
+📦 Output Format:
 
-    Use separate code blocks for each file with clear labels like:
-    // controller.ts, // service.ts, etc.
-    Do not include any other text or explanations.
+    Return the modified controller file code, with only decorators added, updated, or removed.
+
+        Do not change any business logic or unrelated lines.
+
+    If multiple files are involved, output each one in a separate code block and label them using comments if it doesn't exist already:
+
+    // controller.ts
+
+    Keep all formatting and structure intact.
+
+💬 Review Style:
+
+Your output should be written in the style of a pull request comment:
+
+    Be constructive, concise, and clear.
+
+    Point out what decorators were added or removed and why.
+
+    Include a changelog with a summary of changes.
+    Use the following format:
+
+        "Added @ApiBody() based on method input DTO"
+
+        "Removed @ApiResponse({ status: 500 }) — handled globally"
 `,
       //       instructions: `If the controller and DTO are already documented correctly according to the rules above, reply with:
 
