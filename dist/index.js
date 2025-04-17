@@ -35679,7 +35679,7 @@ const runner_1 = __nccwpck_require__(4813);
         const appId = Number(core.getInput("gh_app_id", { required: true }));
         const privateKey = core.getInput("gh_app_private_key", { required: true });
         const model = core.getInput("model") || "gpt-4.1";
-        const allowedModels = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o"];
+        const allowedModels = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", 'gpt-4o-mini'];
         if (!allowedModels.includes(model)) {
             throw new Error(`Invalid model: ${model}. Must be one of: ${allowedModels.join(", ")}`);
         }
