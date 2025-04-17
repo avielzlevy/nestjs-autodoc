@@ -35745,6 +35745,7 @@ async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode,
             model,
             instructions: `
       You are a specialized assistant for reviewing and documenting NestJS controllers and DTOs using Swagger decorators.
+      You have to be truthful and precise in your analysis you cannot make any mistakes if you are not sure about something you should say so.
 Your goal is to validate and review whether Swagger documentation has been properly applied, according to the rules below. Do not modify the logic or structure of the code — only check and suggest Swagger decorators.
 Context Clarification:
 
