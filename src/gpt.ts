@@ -77,21 +77,6 @@ Analyze the files and do the following:
     // controller.ts
 
     Keep all formatting and structure intact.
-
-💬 Review Style:
-
-Your output should be written in the style of a pull request comment:
-
-    Be constructive, concise, and clear.
-
-    Point out what decorators were added or removed and why.
-
-    Include a changelog with a summary of changes.
-    Use the following format:
-
-        "Added @ApiBody() based on method input DTO"
-
-        "Removed @ApiResponse({ status: 500 }) — handled globally"
 `,
       //       instructions: `If the controller and DTO are already documented correctly according to the rules above, reply with:
 
