@@ -35746,39 +35746,38 @@ async function sendEnhancementRequestToGPT(serviceCode, dtoCode, controllerCode,
             instructions: `
       You will receive three TypeScript files from a NestJS project:
 
-    Service File – Contains business logic including method parameters, return types, and possible exceptions.
+    Service File – Contains business logic, including method parameters, return types, and possible exceptions.
 
     DTO File – Defines the Data Transfer Object classes used for requests and responses.
 
-    Controller File – Contains route definitions and handlers for the API endpoints.
+    Controller File – Contains route definitions and method handlers.
 
-Your task is to analyze the controller file and identify missing or incomplete Swagger decorators, such as:
+Your task:
 
-    @ApiOkResponse, @ApiCreatedResponse, @ApiBadRequestResponse, @ApiNotFoundResponse
+    Analyze the controller file and identify missing or incomplete Swagger decorators, such as:
 
-    @ApiBody, @ApiQuery, @ApiParam, etc.
+        @ApiOkResponse, @ApiCreatedResponse, @ApiBadRequestResponse, @ApiNotFoundResponse
 
-Use the service and DTO files to infer the expected behavior, parameters, and responses.
+        @ApiBody, @ApiQuery, @ApiParam, etc.
 
-Important notes:
+    Use the service and DTO files to infer correct parameters, responses, and error scenarios.
 
-    Some routes may already have partial documentation (e.g., only one decorator applied, or a missing @ApiBody).
+    Some endpoints may already have partial documentation – fill in only what’s missing.
 
-        In these cases, suggest the missing decorators only.
+    If a controller method is already fully documented, respond with:
+    ✅ Already Documented
 
-    Some routes may be fully documented.
+Your output should follow this format:
 
-        In these cases, respond clearly with "✅ Already Documented" for that route or method.
+    For each file, return the corrected code with only the Swagger decorators added or completed.
 
-    Your output should be written in the style of a code review comment, clearly pointing out:
+        Do not modify any business logic or unrelated code.
 
-        What’s missing
+        Keep all original formatting, indentation, and comments.
 
-        Why it’s needed
-
-        What the suggested decorator(s) should look like (include code snippets)
-
-Be constructive and professional in tone — helpful and specific, just like in a real pull request review.
+    Use separate code blocks for each file with clear labels like:
+    // controller.ts, // service.ts, etc.
+    Do not include any other text or explanations.
 `,
             //       instructions: `If the controller and DTO are already documented correctly according to the rules above, reply with:
             // ✅ Already documented
