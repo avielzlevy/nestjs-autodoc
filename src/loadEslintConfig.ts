@@ -1,15 +1,17 @@
-import path from "path";
 import fs from "fs";
-import { createRequire } from "module";
+import path from "path";
 
-export function loadEslintFlatConfig(backendDir: string): any {
-  const configPath = path.resolve(backendDir, "eslint.config.cjs");
-  const requireFromRuntime = createRequire(__filename);
+export async function loadEslintFlatConfig() {
+  const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+  const configPath = path.join(workspace, "backend", "eslint.config.cjs");
 
   if (!fs.existsSync(configPath)) {
     throw new Error(`❌ Config file does not exist at ${configPath}`);
   }
 
   console.log(`✅ ESLint config loaded: ${configPath}`);
-  return requireFromRuntime(configPath);
+
+  // Load CommonJS config with require()
+  const config = require(configPath);
+  return config.default || config;
 }

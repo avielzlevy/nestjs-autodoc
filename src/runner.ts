@@ -15,7 +15,7 @@ export async function runDocEnhancer(
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   const backendDir = path.join(workspace, "backend");
 
-  const overrideConfig = await loadEslintFlatConfig(backendDir); // pass path
+  const overrideConfig = await loadEslintFlatConfig(); // pass path
   const eslint = new ESLint({
     cwd: backendDir,
     overrideConfig: Array.isArray(overrideConfig)
