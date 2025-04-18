@@ -1,7 +1,6 @@
 import { ESLint } from "eslint";
 import path from "path";
 import { getAppOctokit } from "./authenticateApp";
-import { loadEslintFlatConfig } from "./loadEslintConfig";
 
 export async function runDocEnhancer(
   appId: number,
@@ -15,12 +14,9 @@ export async function runDocEnhancer(
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   const backendDir = path.join(workspace, "backend");
 
-  const overrideConfig = await loadEslintFlatConfig(); // pass path
   const eslint = new ESLint({
     cwd: backendDir,
-    overrideConfig: Array.isArray(overrideConfig)
-      ? overrideConfig[0]
-      : overrideConfig,
+    overrideConfigFile: "eslint.config.cjs", // 👈 native load
     cache: false,
   });
 
