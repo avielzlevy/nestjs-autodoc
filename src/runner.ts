@@ -19,6 +19,7 @@ export async function runDocEnhancer(
 
   const eslint = new ESLint({
     cwd: backendDir,
+    cache: false,
   });
 
   // ─── 2) Fetch commits & existing comments ───────────────────────────────────
