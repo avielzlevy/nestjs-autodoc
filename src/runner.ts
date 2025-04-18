@@ -53,7 +53,7 @@ export async function runDocEnhancer(
       commitData.files
         ?.map((f) => f.filename)
         .filter((fn) => fn.endsWith(".ts"))
-        .filter((fn) => fn.startsWith("src/")) || [];
+        .filter((fn) => fn.startsWith("backend/")) || [];
 
     if (changedFiles.length === 0) {
       console.log(`ℹ️  No .ts files changed in commit ${shortSha}, skipping.`);
