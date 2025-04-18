@@ -1,7 +1,7 @@
-import path from "path";
 import { ESLint } from "eslint";
-import { createRequire } from "module"; // ✅ THIS is key
+import path from "path";
 import { getAppOctokit } from "./authenticateApp";
+import { loadEslintFlatConfig } from "./loadEslintConfig";
 
 export async function runDocEnhancer(
   appId: number,
@@ -12,34 +12,18 @@ export async function runDocEnhancer(
   prNumber: number
 ) {
   const octokit = getAppOctokit(appId, privateKey, installationId);
-
-  // ─── locate backend workspace ───────────────────────────
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   const backendDir = path.join(workspace, "backend");
 
-  // ─── load your flat ESM config (with createRequire) ─────
-  const require = createRequire(__filename);
-  const configPath = path.join(backendDir, "eslint.config.mjs");
-
-  let flat: any;
-  try {
-    flat = require(configPath);
-  } catch (err) {
-    console.error(`❌ Failed to load ESLint config from: ${configPath}`);
-    throw err;
-  }
-
-  const overrideConfig = Array.isArray(flat) ? flat[0] : flat;
-  console.log("✅ ESLint config loaded:", configPath);
-
-  // ─── instantiate ESLint with your config object ─────────
+  const overrideConfig = await loadEslintFlatConfig();
   const eslint = new ESLint({
     cwd: backendDir,
-    overrideConfig,
+    overrideConfig: Array.isArray(overrideConfig)
+      ? overrideConfig[0]
+      : overrideConfig,
     cache: false,
   });
 
-  // ─── fetch commits and existing comments ─────────────────
   const { data: commits } = await octokit.pulls.listCommits({
     owner,
     repo,
@@ -69,8 +53,8 @@ export async function runDocEnhancer(
 
     const changed = (commitData.files ?? [])
       .map((f) => f.filename)
-      .filter((fn) => fn.endsWith(".ts") && fn.startsWith("backend/"))
-      .map((fn) => fn.replace(/^backend\//, ""));
+      .filter((f) => f.endsWith(".ts") && f.startsWith("backend/"))
+      .map((f) => f.replace(/^backend\//, ""));
 
     if (!changed.length) {
       console.log(`ℹ️ No backend .ts changes in ${shortSha}`);
