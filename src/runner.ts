@@ -15,7 +15,7 @@ export async function runDocEnhancer(
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   const backendDir = path.join(workspace, "backend");
 
-  const overrideConfig = await loadEslintFlatConfig();
+  const overrideConfig = await loadEslintFlatConfig(backendDir); // pass path
   const eslint = new ESLint({
     cwd: backendDir,
     overrideConfig: Array.isArray(overrideConfig)
@@ -29,6 +29,7 @@ export async function runDocEnhancer(
     repo,
     pull_number: prNumber,
   });
+
   const { data: comments } = await octokit.issues.listComments({
     owner,
     repo,
@@ -76,6 +77,7 @@ export async function runDocEnhancer(
       issue_number: prNumber,
       body,
     });
+
     console.log(`💬 Commented for ${shortSha}`);
   }
 }
