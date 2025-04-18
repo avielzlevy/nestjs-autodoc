@@ -1,5 +1,6 @@
-import fs from "fs";
+// loadEslintConfig.ts
 import path from "path";
+import fs from "fs";
 
 export async function loadEslintFlatConfig() {
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
@@ -9,9 +10,7 @@ export async function loadEslintFlatConfig() {
     throw new Error(`❌ Config file does not exist at ${configPath}`);
   }
 
-  console.log(`✅ ESLint config loaded: ${configPath}`);
-
-  // Load CommonJS config with require()
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const config = require(configPath);
-  return config.default || config;
+  return config;
 }
