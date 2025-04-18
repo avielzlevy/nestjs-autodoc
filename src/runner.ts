@@ -1,4 +1,5 @@
 // src/runner.ts
+import path from "path";
 import { getAppOctokit } from "./authenticateApp";
 import { ESLint } from "eslint";
 
@@ -11,16 +12,23 @@ export async function runDocEnhancer(
   prNumber: number
 ) {
   const octokit = getAppOctokit(appId, privateKey, installationId);
-  const eslint = new ESLint({});
 
-  // 1. get all commits in the PR
+  // ─── 1) Point ESLint at backend/ as its workspace ───────────────────────────
+  const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+  const backendDir = path.join(workspace, "backend");
+  const configFile = path.join(backendDir, "eslint.config.mjs");
+
+  const eslint = new ESLint({
+    cwd: backendDir,
+    overrideConfigFile: configFile,
+  });
+
+  // ─── 2) Fetch commits & existing comments ───────────────────────────────────
   const { data: commits } = await octokit.pulls.listCommits({
     owner,
     repo,
     pull_number: prNumber,
   });
-
-  // 2. get all existing comments on the PR
   const { data: comments } = await octokit.issues.listComments({
     owner,
     repo,
@@ -31,7 +39,7 @@ export async function runDocEnhancer(
     const sha = commit.sha;
     const shortSha = sha.slice(0, 7);
 
-    // 3. check if we already commented on this commit
+    // skip if we already commented this SHA
     const alreadyCommented = comments.some((c) =>
       c.body?.includes(`\`${shortSha}\``)
     );
@@ -42,31 +50,31 @@ export async function runDocEnhancer(
 
     console.log(`🔍 Processing commit ${shortSha}`);
 
-    // 4. fetch the list of files changed in this commit
+    // fetch changed files for this commit
     const { data: commitData } = await octokit.repos.getCommit({
       owner,
       repo,
       ref: sha,
     });
 
-    const changedFiles =
-      commitData.files
-        ?.map((f) => f.filename)
-        .filter((fn) => fn.endsWith(".ts"))
-        .filter((fn) => fn.startsWith("backend/")) || [];
+    // only .ts files under backend/, then strip the "backend/" prefix
+    const changedFiles = (commitData.files
+      ?.map((f) => f.filename)
+      .filter((fn) => fn.endsWith(".ts") && fn.startsWith("backend/"))
+      .map((fn) => fn.replace(/^backend\//, "")) ) || [];
 
     if (changedFiles.length === 0) {
-      console.log(`ℹ️  No .ts files changed in commit ${shortSha}, skipping.`);
+      console.log(`ℹ️  No backend .ts files changed in commit ${shortSha}, skipping.`);
       continue;
     }
 
-    // 5. run ESLint on only those changed files
+    // run ESLint *from* backendDir, using your overrideConfigFile
     const results = await eslint.lintFiles(changedFiles);
     const formatter = await eslint.loadFormatter("stylish");
     const output = formatter.format(results);
     const hasErrors = results.some((r) => r.errorCount > 0);
 
-    // 6. build a comment that includes the commit SHA
+    // build a comment including the SHA
     const body = hasErrors
       ? `### ❌ ESLint issues in commit \`${shortSha}\`:\n\`\`\`ts\n${output}\n\`\`\`\nPlease address and push again.`
       : `### ✅ No ESLint errors in commit \`${shortSha}\`.`;
