@@ -16,11 +16,9 @@ export async function runDocEnhancer(
   // ─── 1) Point ESLint at backend/ as its workspace ───────────────────────────
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   const backendDir = path.join(workspace, "backend");
-  const configFile = path.join(backendDir, "eslint.config.mjs");
 
   const eslint = new ESLint({
     cwd: backendDir,
-    overrideConfigFile: configFile,
   });
 
   // ─── 2) Fetch commits & existing comments ───────────────────────────────────
